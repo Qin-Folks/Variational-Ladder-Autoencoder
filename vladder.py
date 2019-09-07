@@ -241,10 +241,23 @@ class VLadder(Network):
             self.writer.add_summary(summary, self.iteration)
         return recon_loss, reg_loss
 
-    def test(self, batch_input, label=None):
-        train_return = self.sess.run(self.toutput,
-                                     feed_dict={self.input_placeholder: batch_input, self.is_training: False})
-        return train_return
+    def test(self, batch_input, batch_target, label=None):
+        # train_return = self.sess.run(self.toutput,
+        #                              feed_dict={self.input_placeholder: batch_input,
+        #                                         self.reg_coeff: 1 - math.exp(-self.iteration / 2000.0),
+        #                                         self.is_training: False})
+        codes = {key: np.random.normal(size=[self.batch_size, self.ladders[key][1]]) for key in self.ladders}
+        feed_dict = {self.ladders[key][0]: codes[key] for key in self.ladders}
+        feed_dict.update({
+            self.input_placeholder: batch_input,
+            self.reg_coeff: 1 - math.exp(-self.iteration / 2000.0),
+            self.target_placeholder: batch_target,
+            self.is_training: True
+        })
+        _, recon_loss, reg_loss, recons = self.sess.run([self.train_op, self.reconstruction_loss, self.regularization,
+                                                         self.toutput],
+                                                        feed_dict=feed_dict)
+        return recons
 
     def inference(self, batch_input):
         tensor_handle = [self.ladders[key][2] for key in self.ladders]

@@ -1,5 +1,7 @@
 from visualize import *
 import time
+from PIL import Image
+
 
 
 class NoisyTrainer:
@@ -49,8 +51,8 @@ class NoisyTrainer:
             sample_visualizer = SampleVisualizer(self.network, self.dataset)
         if self.network.do_generate_conditional_samples:
             sample_visualizer_conditional = ConditionalSampleVisualizer(self.network, self.dataset)
-        if self.network.do_generate_manifold_samples:
-            sample_visualizer_manifold = ManifoldSampleVisualizer(self.network, self.dataset)
+        # if self.network.do_generate_manifold_samples:
+        #     sample_visualizer_manifold = ManifoldSampleVisualizer(self.network, self.dataset)
 
         iteration = 0
         while True:
@@ -64,8 +66,11 @@ class NoisyTrainer:
                       (iteration, recon_loss, reg_loss, time.time() - iter_time))
 
             if iteration % self.args.vis_frequency == 0:
-                test_error = self.test(iteration//self.args.vis_frequency, 5)
-                print("Reconstruction error @%d per pixel: " % iteration, test_error)
+                test_image = self.dataset.next_test_batch(self.batch_size)
+                reconstruction = self.network.test(noisy_input, images)
+                self.plot_reconstruction(iteration//self.args.vis_frequency, test_image, noisy_input, reconstruction)
+                    # test_error = self.test(iteration//self.args.vis_frequency, 5)
+            #     print("Reconstruction error @%d per pixel: " % iteration, test_error)
 
                 layers = [layer for layer in self.network.random_latent_code()]
                 layers.sort()
@@ -74,8 +79,8 @@ class NoisyTrainer:
                     sample_visualizer.visualize(num_rows=10, use_gui=self.args.use_gui)
                 if self.network.do_generate_conditional_samples:
                     sample_visualizer_conditional.visualize(layers=layers, num_rows=10, use_gui=self.args.use_gui)
-                if self.network.do_generate_manifold_samples:
-                    sample_visualizer_manifold.visualize(layers=layers, num_rows=30, use_gui=self.args.use_gui)
+                # if self.network.do_generate_manifold_samples:
+                #     sample_visualizer_manifold.visualize(layers=layers, num_rows=30, use_gui=self.args.use_gui)
             iteration += 1
 
     def visualize(self):
@@ -124,11 +129,15 @@ class NoisyTrainer:
             os.makedirs(img_folder)
 
         if canvas.shape[-1] == 1:
-            misc.imsave(os.path.join(img_folder, 'current.png'), canvas[:, :, 0])
-            misc.imsave(os.path.join(img_folder, 'epoch%d.png' % epoch), canvas[:, :, 0])
+            # misc.imsave(os.path.join(img_folder, 'current.png'), canvas[:, :, 0])
+            # misc.imsave(os.path.join(img_folder, 'epoch%d.png' % epoch), canvas[:, :, 0])
+            im = Image.fromarray(canvas[:, :, 0])
+            im.save(os.path.join(img_folder, 'epoch%d.png' % epoch))
         else:
-            misc.imsave(os.path.join(img_folder, 'current.png'), canvas)
-            misc.imsave(os.path.join(img_folder, 'epoch%d.png' % epoch), canvas)
+            # misc.imsave(os.path.join(img_folder, 'current.png'), canvas)
+            # misc.imsave(os.path.join(img_folder, 'epoch%d.png' % epoch), canvas)
+            im = Image.fromarray(canvas)
+            im.save(os.path.join(img_folder, 'epoch%d.png' % epoch))
 
         if self.args.use_gui:
             if self.fig is None:

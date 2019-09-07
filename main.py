@@ -12,7 +12,7 @@ parser.add_argument('--no_train', type=bool, default=False)
 parser.add_argument('--gpus', type=str, default='')
 parser.add_argument('--dataset', type=str, default='celebA')
 parser.add_argument('--netname', type=str, default='')
-parser.add_argument('--batch_size', type=int, default=100)
+parser.add_argument('--batch_size', type=int, default=128)
 parser.add_argument('--db_path', type=str, default='')
 parser.add_argument('--reg', type=str, default='kl')
 parser.add_argument('--denoise_train', dest='denoise_train', action='store_true',
