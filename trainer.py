@@ -1,6 +1,6 @@
 from visualize import *
 import time
-from PIL import Image
+import imageio
 
 
 
@@ -131,13 +131,11 @@ class NoisyTrainer:
         if canvas.shape[-1] == 1:
             # misc.imsave(os.path.join(img_folder, 'current.png'), canvas[:, :, 0])
             # misc.imsave(os.path.join(img_folder, 'epoch%d.png' % epoch), canvas[:, :, 0])
-            im = Image.fromarray(canvas[:, :, 0])
-            im.save(os.path.join(img_folder, 'epoch%d.png' % epoch))
+            imageio.imwrite(os.path.join(img_folder, 'epoch%d.jpg' % epoch), canvas[:, :, 0])
         else:
             # misc.imsave(os.path.join(img_folder, 'current.png'), canvas)
             # misc.imsave(os.path.join(img_folder, 'epoch%d.png' % epoch), canvas)
-            im = Image.fromarray(canvas)
-            im.save(os.path.join(img_folder, 'epoch%d.png' % epoch))
+            imageio.imwrite(os.path.join(img_folder, 'epoch%d.jpg' % epoch), canvas)
 
         if self.args.use_gui:
             if self.fig is None:
