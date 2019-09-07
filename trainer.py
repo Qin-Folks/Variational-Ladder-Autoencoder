@@ -66,9 +66,8 @@ class NoisyTrainer:
                       (iteration, recon_loss, reg_loss, time.time() - iter_time))
 
             if iteration % self.args.vis_frequency == 0:
-                test_image = self.dataset.next_test_batch(self.batch_size)
                 reconstruction = self.network.test(noisy_input, images)
-                self.plot_reconstruction(iteration//self.args.vis_frequency, test_image, noisy_input, reconstruction)
+                self.plot_reconstruction(iteration//self.args.vis_frequency, images, noisy_input, reconstruction)
                     # test_error = self.test(iteration//self.args.vis_frequency, 5)
             #     print("Reconstruction error @%d per pixel: " % iteration, test_error)
 
@@ -124,18 +123,19 @@ class NoisyTrainer:
             canvas[img_index*self.data_dims[0]:(img_index+1)*self.data_dims[0], self.data_dims[1]*2+20:] = \
                 self.dataset.display(reconstruction[img_index, :, :])
 
-        img_folder = "models/" + self.network.name + "/reconstruction"
+        img_folder = self.network.model_name + "/reconstruction"
+        print('img folder: ', img_folder)
         if not os.path.isdir(img_folder):
             os.makedirs(img_folder)
 
         if canvas.shape[-1] == 1:
             # misc.imsave(os.path.join(img_folder, 'current.png'), canvas[:, :, 0])
             # misc.imsave(os.path.join(img_folder, 'epoch%d.png' % epoch), canvas[:, :, 0])
-            imageio.imwrite(os.path.join(img_folder, 'epoch%d.jpg' % epoch), canvas[:, :, 0])
+            imageio.imwrite(os.path.join(img_folder, 'epoch%d.png' % epoch), canvas[:, :, 0])
         else:
             # misc.imsave(os.path.join(img_folder, 'current.png'), canvas)
             # misc.imsave(os.path.join(img_folder, 'epoch%d.png' % epoch), canvas)
-            imageio.imwrite(os.path.join(img_folder, 'epoch%d.jpg' % epoch), canvas)
+            imageio.imwrite(os.path.join(img_folder, 'epoch%d.png' % epoch), canvas)
 
         if self.args.use_gui:
             if self.fig is None:

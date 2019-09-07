@@ -7,6 +7,9 @@ from matplotlib.patches import Ellipse
 from tensorflow.examples.tutorials.mnist import input_data
 import os, sys, shutil, re
 
+from utils import utils_nn, utils_io
+
+
 def lrelu(x, rate=0.1):
     # return tf.nn.relu(x)
     return tf.maximum(tf.minimum(x * rate, 0), x)
@@ -101,19 +104,21 @@ class Network:
         self.do_generate_conditional_samples = False
         self.do_generate_manifold_samples = False
 
+        self.model_name = "models/" + self.name + utils_io.get_current_time()
+
     def make_model_path(self):
         if not os.path.isdir("models"):
             os.mkdir("models")
-        if not os.path.isdir("models/" + self.name):
-            os.mkdir("models/" + self.name)
+        if not os.path.isdir(self.model_name):
+            os.mkdir(self.model_name)
 
     def print_network(self):
         self.make_model_path()
-        if os.path.isdir("models/" + self.name):
-            for f in os.listdir("models/" + self.name):
+        if os.path.isdir(self.model_name):
+            for f in os.listdir(self.model_name):
                 if re.search(r"events.out*", f):
-                    os.remove(os.path.join("models/" + self.name, f))
-        self.writer = tf.summary.FileWriter("models/" + self.name, self.sess.graph)
+                    os.remove(os.path.join(self.model_name + self.name, f))
+        self.writer = tf.summary.FileWriter(self.model_name + self.name, self.sess.graph)
         self.writer.flush()
 
     """ Save network, if network file already exists back it up to models/old folder. Only one back up will be created
@@ -125,10 +130,10 @@ class Network:
                 saver = tf.train.Saver()
             self.make_model_path()
             if not os.path.isdir("models/old"):
-                os.mkdir("models/old")
-            file_name = "models/" + self.name + "/" + self.name + ".ckpt"
+                os.mkdir(self.model_name + "/old")
+            file_name = self.model_name + ".ckpt"
             if os.path.isfile(file_name):
-                os.rename(file_name, "models/old/" + self.name + ".ckpt")
+                os.rename(file_name, self.model_name + ".ckpt")
             saver.save(self.sess, file_name)
 
     """ Either initialize or load network from file.
@@ -138,7 +143,7 @@ class Network:
         self.sess.run(tf.local_variables_initializer())
         if restart:
             return
-        file_name = "models/" + self.name + "/" + self.name + ".ckpt"
+        file_name = self.model_name + "/" + self.name + ".ckpt"
         if len(glob.glob(file_name + '*')) != 0:
             saver = tf.train.Saver()
             try:
